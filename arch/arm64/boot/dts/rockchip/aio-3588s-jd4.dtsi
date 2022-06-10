@@ -34,26 +34,6 @@
                 gpio = <&pca9555 PCA_IO1_6 GPIO_ACTIVE_HIGH>;
         };
 
-        vcc_4g_pwren: vcc-4g-pwren-regulator {
-                compatible = "regulator-fixed";
-                regulator-name = "vcc_4g_pwren";
-                regulator-always-on;
-                enable-active-high;
-                status = "okay";
-                gpio = <&pca9555 PCA_IO1_4 GPIO_ACTIVE_HIGH>;
-        };
-
-	vcc3v3_pcie20: vcc3v3-pcie20 {
-		compatible = "regulator-fixed";
-		regulator-name = "vcc3v3_pcie20";
-		regulator-min-microvolt = <3300000>;
-		regulator-max-microvolt = <3300000>;
-		enable-active-high;
-		//gpios = <&gpio1 RK_PD7 GPIO_ACTIVE_HIGH>;
-		startup-delay-us = <5000>;
-		vin-supply = <&vcc12v_dcin>;
-	};
-
 	vcc_3v3_sd_s0: vcc-3v3-sd-s0 {
 		compatible = "regulator-fixed";
 		regulator-name = "vcc_3v3_sd_s0";
@@ -67,16 +47,6 @@
 			regulator-state-mem {
 			regulator-off-in-suspend;
 		};
-	};
-
-
-	vcc_hub3_reset: vcc-hub3-reset-regulator {
-		compatible = "regulator-fixed";
-		regulator-name = "vcc_hub3_reset";
-		regulator-always-on;
-		enable-active-high;
-		status = "okay";
-		gpio = <&pca9555 PCA_IO0_6 GPIO_ACTIVE_HIGH>;  //PCA_IO 06
 	};
 
     vcc_3v0_sata: vcc-3v0-sata-regulator {
@@ -227,7 +197,7 @@
 
 &pcie2x1l2 {
 	reset-gpios = <&gpio3 RK_PD1 GPIO_ACTIVE_HIGH>;
-	vpcie3v3-supply = <&vcc3v3_pcie20>;
+	rockchip,skip-scan-in-resume;
 	status = "okay";
 };
 
@@ -276,7 +246,9 @@
 
 &gmac1{
  	snps,reset-gpio = <&gpio3 RK_PB7 GPIO_ACTIVE_LOW>;
-	tx_delay = <0x3d>;
+	phy-mode = "rgmii";
+	tx_delay = <0x40>;
+	rx_delay = <0x36>;
 	status = "okay";
 };
 
