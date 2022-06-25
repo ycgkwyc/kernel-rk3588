@@ -10,7 +10,7 @@
 #include <linux/device.h>
 #include <linux/module.h>
 #include <linux/usb/video.h>
-
+#include "uvc.h"
 #include "u_uvc.h"
 
 USB_GADGET_COMPOSITE_OPTIONS();
