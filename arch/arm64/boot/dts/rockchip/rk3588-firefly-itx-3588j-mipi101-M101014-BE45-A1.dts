@@ -21,7 +21,7 @@
 		regulator-always-on;
 	};
 */
-	backlight_1: backlight {
+	backlight_1: backlight-1 {
 		status = "okay";
 		compatible = "pwm-backlight";
 		enable-gpios = <&gpio4 RK_PC6 GPIO_ACTIVE_HIGH>;
