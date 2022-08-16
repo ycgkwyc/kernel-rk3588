@@ -19,15 +19,10 @@
 #include <linux/interrupt.h>
 #include <linux/platform_device.h>
 #include <linux/delay.h>
-
-#define FIREFLY_HIGH_KERNEL_VERSION 1
+#include <linux/gpio/consumer.h> /* for enum gpiod_flags */
 
 struct firefly_gpio_info {
-#ifdef FIREFLY_HIGH_KERNEL_VERSION
-	struct gpio_desc* firefly_gpiod;
-#else
-	int firefly_gpio;
-#endif
+    int firefly_gpio;
     int gpio_enable_value;
     int firefly_irq_gpio;
     int firefly_irq;
@@ -37,78 +32,71 @@ struct firefly_gpio_info {
 static irqreturn_t firefly_gpio_irq(int irq, void *dev_id)
 {
     printk("Enter firefly gpio irq test program!\n");
-        return IRQ_HANDLED;
+    return IRQ_HANDLED;
 }
 
 static int firefly_gpio_probe(struct platform_device *pdev)
 {
     int ret;
     int gpio;
-	int time;
     enum of_gpio_flags flag;
     struct firefly_gpio_info *gpio_info;
     struct device_node *firefly_gpio_node = pdev->dev.of_node;
 
     printk("Firefly GPIO Test Program Probe\n");
-	gpio_info = devm_kzalloc(&pdev->dev,sizeof(struct firefly_gpio_info *), GFP_KERNEL);
+	gpio_info = devm_kzalloc(&pdev->dev,sizeof(struct firefly_gpio_info), GFP_KERNEL);
     if (!gpio_info) {
         dev_err(&pdev->dev, "devm_kzalloc failed!\n");
-                return -ENOMEM;
+        return -ENOMEM;
     }
-
-#ifdef FIREFLY_HIGH_KERNEL_VERSION
-	gpio_info->firefly_gpiod = devm_gpiod_get_optional(&pdev->dev, "firefly", GPIOD_OUT_LOW);
-    if (IS_ERR(gpio_info->firefly_gpiod)) {
-        dev_err(&pdev->dev, "failed to get firefly gpio\n");
-		return -ENODEV; 
-    }
-    ret=of_property_read_u32(firefly_gpio_node,"firefly-mdelay",&time);
-	if(!ret && (time > 0)){
-		printk("firefly gpio delay %d ms\n",time);
-		msleep(time);
-	}
-	printk("firefly gpio out high\n");
-	gpiod_set_value_cansleep(gpio_info->firefly_gpiod, 1);
-#else
     gpio = of_get_named_gpio_flags(firefly_gpio_node, "firefly-gpio", 0, &flag);
-    if (!gpio_is_valid(gpio)) {
+    if (!gpio_is_valid(gpio))
+    {
         dev_err(&pdev->dev, "firefly-gpio: %d is invalid\n", gpio);
         return -ENODEV;
     }
-    if (gpio_request(gpio, "firefly-gpio")) {
+    if (gpio_request(gpio, "firefly-gpio"))
+    {
         dev_err(&pdev->dev, "firefly-gpio: %d request failed!\n", gpio);
         gpio_free(gpio);
         return -ENODEV;
     }
     gpio_info->firefly_gpio = gpio;
-    gpio_info->gpio_enable_value = (flag == OF_GPIO_ACTIVE_LOW) ? 0:1;
+    gpio_info->gpio_enable_value = (flag == OF_GPIO_ACTIVE_LOW) ? 0 : 1;
     gpio_direction_output(gpio_info->firefly_gpio, gpio_info->gpio_enable_value);
-    printk("Firefly gpio putout\n");
-#endif
+    printk("Firefly gpio putout finish \n");
+
 
     gpio = of_get_named_gpio_flags(firefly_gpio_node, "firefly-irq-gpio", 0, &flag);
-     if (!gpio_is_valid(gpio)) {
-        printk("firefly-irq-gpio: %d is invalid\n", gpio);
-        return 0;
+    if (!gpio_is_valid(gpio))
+    {
+        dev_err(&pdev->dev, "firefly-irq-gpio: %d is invalid\n", gpio);
+        return -ENODEV;
     }
 
     gpio_info->firefly_irq_gpio = gpio;
     gpio_info->firefly_irq_mode = flag;
     gpio_info->firefly_irq = gpio_to_irq(gpio_info->firefly_irq_gpio);
-    if (gpio_info->firefly_irq) {
-        if (gpio_request(gpio, "firefly-irq-gpio")) {
+    if (gpio_info->firefly_irq)
+    {
+        if (gpio_request(gpio, "firefly-irq-gpio"))
+        {
             dev_err(&pdev->dev, "firefly-irq-gpio: %d request failed!\n", gpio);
             gpio_free(gpio);
             return IRQ_NONE;
         }
 
-            ret = request_irq(gpio_info->firefly_irq, firefly_gpio_irq,
-                flag, "firefly-gpio", gpio_info);
-            if (ret != 0) {
+        ret = request_irq(gpio_info->firefly_irq, firefly_gpio_irq,
+                          flag, "firefly-gpio", gpio_info);
+        if (ret != 0)
+        {
             free_irq(gpio_info->firefly_irq, gpio_info);
-                    dev_err(&pdev->dev, "Failed to request IRQ: %d\n", ret);
+            dev_err(&pdev->dev, "Failed to request IRQ: %d\n", ret);
         }
     }
+    printk("Firefly irq gpio finish \n");
+
+
     return 0;
 }
 
@@ -128,9 +116,13 @@ static struct platform_driver firefly_gpio_driver = {
 
 static int firefly_gpio_init(void)
 {
-        return platform_driver_register(&firefly_gpio_driver);
+    int ret;
+    printk("Firefly gpio driver init!\n");
+    ret = platform_driver_register(&firefly_gpio_driver);
+    printk("Firefly gpio driver register return : %d \n",ret);
+    return ret ;
 }
-late_initcall(firefly_gpio_init);
+module_init(firefly_gpio_init);
 
 static void firefly_gpio_exit(void)
 {
@@ -138,7 +130,7 @@ static void firefly_gpio_exit(void)
 }
 module_exit(firefly_gpio_exit);
 
-MODULE_AUTHOR("linjc <service@t-firefly.com>");
+MODULE_AUTHOR("maocl <service@t-firefly.com>");
 MODULE_DESCRIPTION("Firefly GPIO driver");
 MODULE_ALIAS("platform:firefly-gpio");
 MODULE_LICENSE("GPL");

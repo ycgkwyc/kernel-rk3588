@@ -37,6 +37,13 @@ config REGULATOR_FIXED_VOLTAGE
 	  useful for systems which use a combination of software
 	  managed regulators and simple non-configurable regulators.
 
+config REGULATOR_FIXED_VOLTAGE_FIREFLY
+	tristate "Fixed voltage regulator support"
+	help
+	  This driver provides support for fixed voltage regulators,
+	  useful for systems which use a combination of software
+	  managed regulators and simple non-configurable regulators.
+
 config REGULATOR_VIRTUAL_CONSUMER
 	tristate "Virtual regulator consumer support"
 	help
@@ -1285,6 +1292,13 @@ config REGULATOR_VQMMC_IPQ4019
 	help
 	  This driver provides support for the VQMMC LDO I/0
 	  voltage regulator of the IPQ4019 SD/EMMC controller.
+
+config REGULATOR_WL2868C
+	tristate "WILLSEMI WL2868C PMIC regulators"
+	depends on I2C
+	help
+	  Support the voltage and current regulators of the WL2868C series
+	  of PMIC devices.
 
 config REGULATOR_WM831X
 	tristate "Wolfson Microelectronics WM831x PMIC regulators"
