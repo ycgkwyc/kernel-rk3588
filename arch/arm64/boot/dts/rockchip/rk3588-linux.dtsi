@@ -7,8 +7,8 @@
 / {
 	aliases {
 		mmc0 = &sdhci;
-		mmc1 = &sdio;
-		mmc2 = &sdmmc;
+		mmc1 = &sdmmc;
+		mmc2 = &sdio;
 	};
 
 	chosen: chosen {
@@ -130,4 +130,8 @@
 	status = "okay";
 	center-supply = <&vdd_ddr_s0>;
 	mem-supply = <&vdd_log_s0>;
+};
+
+&wdt {
+	status = "okay";
 };
